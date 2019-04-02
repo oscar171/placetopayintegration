@@ -13,11 +13,13 @@ class PlaceToPayController extends Controller
    private $scretKey;
    private $login;
    private $endpoint;
+   private $appurl;
 
    public function __construct()
     {
         $this->scretKey = env('PLACE_TO_PAY_SECRET');
         $this->login = env('PLACE_TO_PAY_LOGIN');
+        $this->appurl = env('APP_URL');
         $this->endpoint = 'https://test.placetopay.com/redirection/';
     }
 
@@ -34,6 +36,7 @@ class PlaceToPayController extends Controller
 
     public function createPayRequest(Request $request)
     {
+
     	$placetopay = $this->getAuth();
     	$payAttempt['mount'] = $request->mount;
     	$payAttempt['description'] = $request->description;
@@ -52,7 +55,7 @@ class PlaceToPayController extends Controller
 		        ],
 		    ],
 		    'expiration' => date('c', strtotime('+2 days')),
-		    'returnUrl' => 'http://localhost/placetopay/callback/' . $reference,
+		    'returnUrl' => $this->appurl.'/placetopay/callback/' . $reference,
 		    'ipAddress' => '127.0.0.1',
 		    'userAgent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
 		];
@@ -67,9 +70,8 @@ class PlaceToPayController extends Controller
 			 Log::info('place.requests', ['requesturl' => $response->processUrl()]);
 			 return redirect($response->processUrl());
 		} else {
-			 dd($response);
-		    // There was some error so check the message and log it
-		    $response->status()->message();
+
+			return redirect('home')->with('warning',$response->status()->message());
 		}
     }
 
@@ -89,6 +91,8 @@ class PlaceToPayController extends Controller
     	    $attempt->paymentMethod = $obj->payment[0]->paymentMethod;
     	    $attempt->paymentMethodName = $obj->payment[0]->paymentMethodName;
     	    $attempt->authorization = $obj->payment[0]->authorization;
+    	    $attempt->issuerName = $obj->payment[0]->issuerName;
+    	    $attempt->receipt = $obj->payment[0]->receipt;
 
     	    if($attempt->save())
     	    	if($response->isApproved())
@@ -102,7 +106,7 @@ class PlaceToPayController extends Controller
 		}
 		else
 		{
-			return redirect('home')->with('warning','Ha fallado');
+			return redirect('home')->with('warning','Referencia de pago no encontrada');
 
 		}
 

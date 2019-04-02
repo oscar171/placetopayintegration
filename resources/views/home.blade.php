@@ -79,7 +79,7 @@
                             @endforeach
                         @else
                         <tr>
-                            <th>No hay intentos de pago</th>
+                            No hay intentos de pago
                         </tr>
                         @endif
                       </tbody>
