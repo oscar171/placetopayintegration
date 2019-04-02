@@ -16,17 +16,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/auth', function () {
-    return view('welcome');
-});
-
-Route::get('/placetopay/callback', function () {
-    Log::info('place.requests', ['request' => request()->all()]);
-});
 
 Auth::routes();
 
-Route::get('/pay', 'AuthPlaceToPayController@createPay');
-Route::get('/placetopay/callback/{ref}', 'AuthPlaceToPayController@callbackHandler');
+Route::post('/pay', 'PlaceToPayController@createPayRequest')->name('new.pay');
+Route::get('/placetopay/callback/{ref}', 'PlaceToPayController@callbackHandler');
 
 Route::get('/home', 'HomeController@index')->name('home');
